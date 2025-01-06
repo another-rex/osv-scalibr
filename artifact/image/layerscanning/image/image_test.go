@@ -301,11 +301,11 @@ func TestFromTarball(t *testing.T) {
 				if errors.Is(gotErr, tc.wantErr) {
 					return
 				}
-				t.Fatalf("Load(%v) returned error: %v, want error: %v", tc.tarPath, gotErr, tc.wantErr)
+				t.Fatalf("FromTarball(%v) returned error: %v, want error: %v", tc.tarPath, gotErr, tc.wantErr)
 			}
 
 			if gotErr != nil {
-				t.Fatalf("Load(%v) returned unexpected error: %v", tc.tarPath, gotErr)
+				t.Fatalf("FromTarball(%v) returned unexpected error: %v", tc.tarPath, gotErr)
 			}
 
 			chainLayers, err := gotImage.ChainLayers()
@@ -387,7 +387,6 @@ func TestFromV1Image(t *testing.T) {
 // chainLayerEntries.
 func compareChainLayerEntries(t *testing.T, gotChainLayer image.ChainLayer, wantChainLayerEntries chainLayerEntries) {
 	t.Helper()
-
 	chainfs := gotChainLayer.FS()
 
 	for _, filepathContentPair := range wantChainLayerEntries.filepathContentPairs {
@@ -395,10 +394,13 @@ func compareChainLayerEntries(t *testing.T, gotChainLayer image.ChainLayer, want
 		if err != nil {
 			t.Fatalf("Open(%v) returned error: %v", filepathContentPair.filepath, err)
 		}
+		defer gotFile.Close()
+
 		contentBytes, err := io.ReadAll(gotFile)
 		if err != nil {
 			t.Fatalf("ReadAll(%v) returned error: %v", filepathContentPair.filepath, err)
 		}
+
 		gotContent := string(contentBytes[:])
 		if diff := cmp.Diff(gotContent, filepathContentPair.content); diff != "" {
 			t.Errorf("Open(%v) returned incorrect content: got %s, want %s", filepathContentPair.filepath, gotContent, filepathContentPair.content)
