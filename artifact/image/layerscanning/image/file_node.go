@@ -18,10 +18,10 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"time"
 )
 
 const (
-
 	// filePermission represents the permission bits for a file, which are minimal since files in the
 	// layer scanning use case are read-only.
 	filePermission = 0600
@@ -50,7 +50,8 @@ func (f *fileNode) Stat() (fs.FileInfo, error) {
 	if f.isWhiteout {
 		return nil, fs.ErrNotExist
 	}
-	return os.Stat(f.RealFilePath())
+
+	return f, nil
 }
 
 // Read reads the real file referred to by the fileNode.
@@ -120,4 +121,28 @@ func (f *fileNode) Type() fs.FileMode {
 // Info returns the FileInfo of the file represented by the fileNode.
 func (f *fileNode) Info() (fs.FileInfo, error) {
 	return f.Stat()
+}
+
+// ========================================================
+// fs.FileMode METHODS
+// ========================================================
+
+// Mode returns the file mode bits.
+func (f *fileNode) Mode() fs.FileMode {
+	return f.mode
+}
+
+// ModTime returns the last modification time.
+func (f *fileNode) ModTime() time.Time {
+	return time.Time{}
+}
+
+// Size returns the size of the file.
+func (f *fileNode) Size() int64 {
+	return 1000
+}
+
+// Sys returns the underlying data source.
+func (f *fileNode) Sys() any {
+	return nil
 }
